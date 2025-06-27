@@ -34,6 +34,7 @@ class FoodgramUser(AbstractUser):
 
     class Meta:
         verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
 
 class Subscription(models.Model):
