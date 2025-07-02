@@ -2,8 +2,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import Sum
+from django.http import FileResponse
 
-from .models import Ingredient, Recipe, Favorite, ShoppingCart
+from .models import Ingredient, Recipe, Favorite, ShoppingCart, RecipeIngredient
 from .serializers import IngredientSerializer, RecipeSerializer
 from .filters import IngredientSearchFilter, RecipeFilter
 from api.permissions import IsAuthorOrReadOnly
@@ -73,7 +75,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response({'short-link': short_link}, status=status.HTTP_200_OK)
 
     @action(
-        methods = ['post', 'delete'],
+        methods=['post', 'delete'],
         detail=True,
         url_path='favorite'
     )
@@ -87,3 +89,38 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def shopping_cart(self, request, pk):
         return self.recipes_management(ShoppingCart, request, pk)
+    
+    @action(
+        methods=['get'],
+        detail=False,
+        url_path='download_shopping_cart'
+    )
+    def download_shopping_cart(self, request):
+        recipes_in_cart = Recipe.objects.filter(
+            recipes_in_shopping_cart__user=request.user
+        )
+
+        ingredients = RecipeIngredient.objects.filter(
+            recipe__in=recipes_in_cart
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).annotate(
+            total=Sum('amount')
+        ).order_by('ingredient__name')
+
+        result_list = []
+
+        for ingredient in ingredients:
+            name = ingredient['ingredient__name']
+            amount = ingredient['total']
+            measurement_unit = ingredient['ingredient__measurement_unit']
+            result_list.append(f'{name} - {amount} {measurement_unit}')
+
+        result_string = ',\n'.join(result_list)
+
+        return FileResponse(
+            result_string, 
+            status=status.HTTP_200_OK, 
+            as_attachment=True, 
+            filename='shopping_list.txt'
+        )
