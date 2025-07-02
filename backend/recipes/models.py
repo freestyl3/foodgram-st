@@ -27,8 +27,6 @@ class Recipe(models.Model):
         through='RecipeIngredient',
         related_name='ingredients'
     )
-    # is_favourited
-    # is_in_shopping_cart
     cooking_time = models.PositiveIntegerField(
         verbose_name='Время приготовления',
         validators=[MinValueValidator(limit_value=1), ]
@@ -108,7 +106,7 @@ class ShoppingCart(models.Model):
         Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name='recipes_in_cart'
+        related_name='recipes_in_shopping_cart'
     )
     created_at = models.DateTimeField(
         verbose_name='Дата добавления',

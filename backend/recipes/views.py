@@ -3,12 +3,13 @@ from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import Ingredient, Recipe
+from .models import Ingredient, Recipe, Favorite, ShoppingCart
 from .serializers import IngredientSerializer, RecipeSerializer
 from .filters import IngredientSearchFilter, RecipeFilter
 from api.permissions import IsAuthorOrReadOnly
 from api.paginator import RecipePaginator
 from django_filters.rest_framework import DjangoFilterBackend
+from users.serializers import UserRecipeSerializer
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
@@ -32,7 +33,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     @action(
-        methods=['GET'],
+        methods=['get'],
         detail=True,
         url_path='get-link',
         permission_classes=(permissions.IsAuthenticatedOrReadOnly, )
@@ -41,3 +42,37 @@ class RecipeViewSet(viewsets.ModelViewSet):
         short_link = request.build_absolute_uri()[:-9]
 
         return Response({'short-link': short_link}, status=status.HTTP_200_OK)
+
+    @action(
+        methods = ['post', 'delete'],
+        detail=True,
+        url_path='favorite'
+    )
+    def favorite(self, request, pk):
+        recipe = get_object_or_404(Recipe, pk=pk)
+
+        if request.method == 'POST':
+            if Favorite.objects.filter(
+                    recipe=recipe,
+                    user=request.user
+                ).exists():
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            favorite = Favorite.objects.create(
+                recipe=recipe,
+                user=request.user
+            )
+            serializer = UserRecipeSerializer(
+                recipe, 
+                context={'request': request}
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        favorite = Favorite.objects.filter(
+            recipe=recipe,
+            user=request.user
+        )
+
+        if favorite:
+            favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
