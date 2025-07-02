@@ -32,6 +32,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def recipes_management(self, model, request, pk):
+        recipe = get_object_or_404(Recipe, pk=pk)
+
+        if request.method == 'POST':
+            if model.objects.filter(
+                    recipe=recipe,
+                    user=request.user
+                ).exists():
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            favorite = model.objects.create(
+                recipe=recipe,
+                user=request.user
+            )
+            serializer = UserRecipeSerializer(
+                recipe, 
+                context={'request': request}
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        favorite = model.objects.filter(
+            recipe=recipe,
+            user=request.user
+        )
+
+        if favorite:
+            favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
     @action(
         methods=['get'],
         detail=True,
@@ -49,30 +78,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='favorite'
     )
     def favorite(self, request, pk):
-        recipe = get_object_or_404(Recipe, pk=pk)
-
-        if request.method == 'POST':
-            if Favorite.objects.filter(
-                    recipe=recipe,
-                    user=request.user
-                ).exists():
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            favorite = Favorite.objects.create(
-                recipe=recipe,
-                user=request.user
-            )
-            serializer = UserRecipeSerializer(
-                recipe, 
-                context={'request': request}
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        favorite = Favorite.objects.filter(
-            recipe=recipe,
-            user=request.user
-        )
-
-        if favorite:
-            favorite.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return self.recipes_management(Favorite, request, pk)
+    
+    @action(
+        methods = ['post', 'delete'],
+        detail=True,
+        url_path='shopping_cart'
+    )
+    def shopping_cart(self, request, pk):
+        return self.recipes_management(ShoppingCart, request, pk)
