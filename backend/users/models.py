@@ -15,13 +15,25 @@ class FoodgramUser(AbstractUser):
         ],
         unique=True
     )
+    first_name = models.CharField(
+        verbose_name='Имя',
+        max_length=150,
+        blank=False,
+        null=False
+    )
+    last_name = models.CharField(
+        verbose_name='Фамилия',
+        max_length=150,
+        blank=False,
+        null=False
+    )
     email = models.EmailField(
         verbose_name='Эл. почта',
         unique=True
     )
     avatar = models.ImageField(
         verbose_name='Аватар пользователя',
-        upload_to='media/users/avatars/',
+        upload_to='users/avatars/',
         default=None,
         null=True
     )
