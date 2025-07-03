@@ -1,13 +1,15 @@
-from rest_framework import viewsets, permissions, serializers, status
-from djoser.views import UserViewSet
-from rest_framework.decorators import action
-from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+from djoser.views import UserViewSet
+from rest_framework import permissions, serializers, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from .serializers import FoodgramUserSerializer, SubscriptionSerializer
-from .models import Subscription
 from api.paginator import FoodgramUserPaginator
+
+from .models import Subscription
+from .serializers import FoodgramUserSerializer, SubscriptionSerializer
+
 
 class FoodgramUserViewSet(UserViewSet):
     queryset = get_user_model().objects.all()

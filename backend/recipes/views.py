@@ -1,17 +1,20 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import permissions, viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from django.db.models import Sum
 from django.http import FileResponse
-
-from .models import Ingredient, Recipe, Favorite, ShoppingCart, RecipeIngredient
-from .serializers import IngredientSerializer, RecipeSerializer
-from .filters import IngredientSearchFilter, RecipeFilter
-from api.permissions import IsAuthorOrReadOnly
-from api.paginator import RecipePaginator
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from api.paginator import RecipePaginator
+from api.permissions import IsAuthorOrReadOnly
 from users.serializers import UserRecipeSerializer
+
+from .filters import IngredientSearchFilter, RecipeFilter
+from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                     ShoppingCart)
+from .serializers import IngredientSerializer, RecipeSerializer
+
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()

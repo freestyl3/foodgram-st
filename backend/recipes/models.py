@@ -1,6 +1,6 @@
-from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
+from django.db import models
 
 
 class Recipe(models.Model):
@@ -14,7 +14,6 @@ class Recipe(models.Model):
         verbose_name='Название',
         max_length=256
     )
-    # string url
     image = models.ImageField(
         verbose_name='Изображение',
         upload_to='recipes/'
@@ -38,7 +37,11 @@ class Recipe(models.Model):
 
     class Meta:
         verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
         ordering = ('-created_at', )
+
+    def __str__(self):
+        return self.name
 
 
 class Ingredient(models.Model):
@@ -54,6 +57,7 @@ class Ingredient(models.Model):
 
     class Meta:
         verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Игредиенты'
         ordering = ('name', )
 
     def __str__(self):
@@ -77,6 +81,17 @@ class RecipeIngredient(models.Model):
         validators=[MinValueValidator(limit_value=1), ]
     )
 
+    class Meta:
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецепте'
+        
+    def __str__(self):
+        amount = self.amount
+        name = self.ingredient.name
+        measurement_unit = self.ingredient.measurement_unit
+        recipe_name = self.recipe.name
+        return f'{amount} {measurement_unit} {name} в {recipe_name}'
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(
@@ -93,7 +108,13 @@ class Favorite(models.Model):
 
     class Meta:
         verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
         ordering = ('recipe', )
+
+    def __str__(self):
+        recipe_name = self.recipe.name
+        username = self.user.username
+        return f'{recipe_name} в избранном у {username}'
 
 
 class ShoppingCart(models.Model):
@@ -115,4 +136,10 @@ class ShoppingCart(models.Model):
 
     class Meta:
         verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзины'
         ordering = ('-created_at', )
+
+    def __str__(self):
+        recipe_name = self.recipe.name
+        username = self.user.username
+        return f'{recipe_name} в корзине у {username}'

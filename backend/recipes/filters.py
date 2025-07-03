@@ -1,8 +1,9 @@
-from rest_framework.filters import SearchFilter
 from django_filters import FilterSet
 from django_filters.rest_framework import BooleanFilter
+from rest_framework.filters import SearchFilter
 
 from .models import Recipe
+
 
 class IngredientSearchFilter(SearchFilter):
     search_param = 'name'

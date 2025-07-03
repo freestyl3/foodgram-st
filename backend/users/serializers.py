@@ -1,12 +1,13 @@
 import base64
 
-from rest_framework import serializers
-from djoser.serializers import UserSerializer
-from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
+from djoser.serializers import UserSerializer
+from rest_framework import serializers
 
-from .models import Subscription, FoodgramUser
 from recipes.models import Recipe
+
+from .models import FoodgramUser, Subscription
 
 
 class Base64AvatarField(serializers.ImageField):

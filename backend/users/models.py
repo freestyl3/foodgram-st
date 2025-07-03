@@ -1,7 +1,7 @@
-from django.db import models
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
-from django.contrib.auth import get_user_model
+from django.db import models
 
 
 class FoodgramUser(AbstractUser):
@@ -65,4 +65,5 @@ class Subscription(models.Model):
 
     class Meta:
         verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
         ordering = ('user', )
