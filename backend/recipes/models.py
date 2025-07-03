@@ -62,7 +62,7 @@ class Ingredient(models.Model):
 
     def __str__(self):
         return self.name
-    
+
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
@@ -72,7 +72,7 @@ class RecipeIngredient(models.Model):
         related_name='ingredient_amount'
     )
     ingredient = models.ForeignKey(
-        Ingredient, 
+        Ingredient,
         verbose_name='Ингредиент',
         on_delete=models.CASCADE
     )
@@ -84,7 +84,7 @@ class RecipeIngredient(models.Model):
     class Meta:
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
-        
+
     def __str__(self):
         amount = self.amount
         name = self.ingredient.name

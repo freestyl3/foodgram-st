@@ -41,7 +41,7 @@ class FoodgramUserSerializer(UserSerializer):
             user=obj,
             follower=user
         ).exists()
-    
+
     def get_avatar(self, obj):
         if obj.avatar:
             return obj.avatar.url
@@ -82,10 +82,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return UserRecipeSerializer(
             recipes, many=True, context=self.context
         ).data
-        
 
     def get_is_subscribed(self, obj):
         return True
-    
+
     def get_recipes_count(self, obj):
         return obj.recipes.count()

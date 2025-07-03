@@ -33,29 +33,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_class = RecipeFilter
 
-    
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
     def recipes_management(self, model, request, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
+        user = request.user
 
         if request.method == 'POST':
-            if model.objects.filter(
-                    recipe=recipe,
-                    user=request.user
-                ).exists():
+            if model.objects.filter(recipe=recipe, user=user).exists():
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             favorite = model.objects.create(
                 recipe=recipe,
                 user=request.user
             )
             serializer = UserRecipeSerializer(
-                recipe, 
+                recipe,
                 context={'request': request}
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
+
         favorite = model.objects.filter(
             recipe=recipe,
             user=request.user
@@ -84,15 +81,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk):
         return self.recipes_management(Favorite, request, pk)
-    
+
     @action(
-        methods = ['post', 'delete'],
+        methods=['post', 'delete'],
         detail=True,
         url_path='shopping_cart'
     )
     def shopping_cart(self, request, pk):
         return self.recipes_management(ShoppingCart, request, pk)
-    
+
     @action(
         methods=['get'],
         detail=False,
@@ -122,8 +119,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         result_string = ',\n'.join(result_list)
 
         return FileResponse(
-            result_string, 
-            status=status.HTTP_200_OK, 
-            as_attachment=True, 
+            result_string,
+            status=status.HTTP_200_OK,
+            as_attachment=True,
             filename='shopping_list.txt'
         )

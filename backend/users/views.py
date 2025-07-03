@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from rest_framework import permissions, serializers, status, viewsets
+from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -20,15 +20,15 @@ class FoodgramUserViewSet(UserViewSet):
         if self.action in ('retrieve', 'list'):
             return (permissions.IsAuthenticatedOrReadOnly(), )
         return super().get_permissions()
-    
+
     def get_serializer_class(self):
-        '''Для правильного отображения полей 
+        '''Для правильного отображения полей
         при запросе на эндпоинт users/me/
         '''
         if self.action == 'me':
             return FoodgramUserSerializer
         return super().get_serializer_class()
-    
+
     @action(
         methods=['post', 'delete'],
         url_path='subscribe',
@@ -42,8 +42,8 @@ class FoodgramUserViewSet(UserViewSet):
         )
         if request.method == 'POST':
             if (
-                follower == following_user or 
-                Subscription.objects.filter(
+                follower == following_user
+                or Subscription.objects.filter(
                     user=following_user,
                     follower=follower
                 ).exists()
@@ -64,7 +64,7 @@ class FoodgramUserViewSet(UserViewSet):
                 data=serializer.data,
                 status=status.HTTP_201_CREATED
             )
-        
+
         subscription = Subscription.objects.filter(
             user=following_user,
             follower=follower
@@ -73,10 +73,9 @@ class FoodgramUserViewSet(UserViewSet):
         if subscription:
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        
     @action(
         methods=['get', ],
         url_path='subscriptions',
@@ -93,14 +92,14 @@ class FoodgramUserViewSet(UserViewSet):
             subscriptions,
             request=request
         )
-        
+
         serializer = SubscriptionSerializer(
-            page, many=True, 
-            context={'request':request}
+            page, many=True,
+            context={'request': request}
         )
 
         return paginator.get_paginated_response(serializer.data)
-    
+
     @action(
         methods=['put', 'delete'],
         detail=False,
@@ -113,7 +112,7 @@ class FoodgramUserViewSet(UserViewSet):
 
             if 'avatar' not in request.data:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            
+
             serializer = FoodgramUserSerializer(
                 user,
                 data=request.data,
@@ -128,9 +127,8 @@ class FoodgramUserViewSet(UserViewSet):
                 data={'avatar': user.avatar.url},
                 status=status.HTTP_200_OK
             )
-        
+
         if user.avatar:
             user.avatar.delete()
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        
