@@ -6,7 +6,7 @@
 
 **Алексей Тягущев**
 
-**Github: [github.com/freestyl3](github.com/freestyl3)**
+**Github: <https://github.com/freestyl3>**
 
 ## Для запуска проекта необходимо:
 
@@ -58,9 +58,9 @@ docker compose exec backend python manage.py createsuperuser
 
 ### Шаг 5: Доступ к сервису
 
-* Фудграм: [http://localhost/](http://localhost/)
-* Админ-зона: [http://localhost/admin](http://localhost/admin)
-* Документация API: [http://localhost/api/docs](http://localhost/api/docs)
+* Фудграм: <http://localhost/>
+* Админ-зона: <http://localhost/admin>
+* Документация API: <http://localhost/api/docs>
 
 ### Шаг 6: Остановка и удаление сервиса
 
