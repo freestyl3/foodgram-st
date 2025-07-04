@@ -28,7 +28,8 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all()
+        queryset=Ingredient.objects.all(),
+        source='ingredient'
     )
     name = serializers.CharField(
         source='ingredient.name',
@@ -63,13 +64,16 @@ class RecipeSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'author')
 
     def create(self, validated_data):
+        print('create')
+        print(validated_data)
         recipe_data = validated_data.pop('ingredient_amount')
+        print(recipe_data)
         recipe = Recipe.objects.create(**validated_data)
         RecipeIngredient.objects.bulk_create(
             [
                 RecipeIngredient(
                     recipe=recipe,
-                    ingredient=recipe_ingredient['id'],
+                    ingredient=recipe_ingredient['ingredient'],
                     amount=recipe_ingredient['amount']
                 ) for recipe_ingredient in recipe_data
             ]
@@ -77,17 +81,20 @@ class RecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
+        print('update')
         print(validated_data)
         recipe_data = validated_data.pop('ingredient_amount', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        instance.save()
         if recipe_data is not None:
+            print(recipe_data)
             instance.ingredient_amount.all().delete()
             RecipeIngredient.objects.bulk_create(
                 [
                     RecipeIngredient(
                         recipe=instance,
-                        ingredient=recipe_ingredient['id'],
+                        ingredient=recipe_ingredient['ingredient'],
                         amount=recipe_ingredient['amount']
                     ) for recipe_ingredient in recipe_data
                 ]

@@ -1,5 +1,5 @@
 from django.db.models import Sum
-from django.http import FileResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, viewsets
@@ -118,9 +118,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         result_string = ',\n'.join(result_list)
 
-        return FileResponse(
-            result_string,
-            status=status.HTTP_200_OK,
-            as_attachment=True,
-            filename='shopping_cart.txt'
-        )
+        response = HttpResponse(result_string, content_type='text/plain')
+
+        filename = 'shopping_cart.txt'
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+        return response

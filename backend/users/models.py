@@ -67,9 +67,16 @@ class Subscription(models.Model):
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         ordering = ('user', )
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'follower'],
+                name='unique subsctiption'
+            )
+        ]
 
     def __str__(self):
         user = self.user.username
         follower = self.follower.username
+        
 
         return f'{follower} подписан на {user}'
