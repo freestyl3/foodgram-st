@@ -67,3 +67,9 @@ class Subscription(models.Model):
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         ordering = ('user', )
+
+    def __str__(self):
+        user = self.user.username
+        follower = self.follower.username
+
+        return f'{follower} подписан на {user}'

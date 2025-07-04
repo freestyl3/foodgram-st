@@ -122,5 +122,5 @@ class RecipeViewSet(viewsets.ModelViewSet):
             result_string,
             status=status.HTTP_200_OK,
             as_attachment=True,
-            filename='shopping_list.txt'
+            filename='shopping_cart.txt'
         )

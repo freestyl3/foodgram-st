@@ -98,7 +98,7 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB', 'foodgram_db'),
         'USER': os.getenv('POSTGRES_USER', 'foodgram_user'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'foodgram_password'),
-        'HOST': os.getenv('DB_HOST', 'db'),
+        'HOST': os.getenv('DB_HOST', ''),
         'PORT': os.getenv('DB_PORT', 5432)
     }
 }
@@ -150,3 +150,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
