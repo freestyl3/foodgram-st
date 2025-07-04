@@ -13,6 +13,11 @@ services:
     env_file: ../.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d foodgram_db -U foodgram_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
 
   backend:
     container_name: foodgram-backend
@@ -22,7 +27,14 @@ services:
       - static:/app/static/
       - media:/app/media/
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+
+  migrations_and_load_data:
+    build: ../backend/
+    command: su -c "python manage.py migrate && python manage.py loaddata data/test_data.json"
+    depends_on:
+      - backend
 
   frontend:
     container_name: foodgram-front
