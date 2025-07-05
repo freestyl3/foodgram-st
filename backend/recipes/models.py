@@ -1,6 +1,11 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+
+from .constraints import (
+    MIN_COOKING_TIME, MAX_COOKING_TIME,
+    MIN_INGREDIENT_AMOUNT, MAX_INGREDIENT_AMOUNT
+)
 
 
 class Recipe(models.Model):
@@ -26,9 +31,12 @@ class Recipe(models.Model):
         through='RecipeIngredient',
         related_name='ingredients'
     )
-    cooking_time = models.PositiveIntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
-        validators=[MinValueValidator(limit_value=1), ]
+        validators=[
+            MinValueValidator(limit_value=MIN_COOKING_TIME),
+            MaxValueValidator(limit_value=MAX_COOKING_TIME)
+        ]
     )
     created_at = models.DateTimeField(
         verbose_name='Дата создания',
@@ -76,14 +84,18 @@ class RecipeIngredient(models.Model):
         verbose_name='Ингредиент',
         on_delete=models.CASCADE
     )
-    amount = models.PositiveIntegerField(
+    amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
-        validators=[MinValueValidator(limit_value=1), ]
+        validators=[
+            MinValueValidator(limit_value=MIN_INGREDIENT_AMOUNT),
+            MaxValueValidator(limit_value=MAX_INGREDIENT_AMOUNT)
+        ]
     )
 
     class Meta:
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
+        ordering = ('recipe', )
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'ingredient'],

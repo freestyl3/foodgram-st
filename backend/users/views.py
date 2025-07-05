@@ -22,9 +22,9 @@ class FoodgramUserViewSet(UserViewSet):
         return super().get_permissions()
 
     def get_serializer_class(self):
-        '''Для правильного отображения полей
+        """Для правильного отображения полей
         при запросе на эндпоинт users/me/
-        '''
+        """
         if self.action == 'me':
             return FoodgramUserSerializer
         return super().get_serializer_class()
@@ -43,10 +43,13 @@ class FoodgramUserViewSet(UserViewSet):
         if request.method == 'POST':
             if (
                 follower == following_user
-                or Subscription.objects.filter(
-                    user=following_user,
+                or following_user.subscriptions.filter(
                     follower=follower
                 ).exists()
+                # Subscription.objects.filter(
+                #     user=following_user,
+                #     follower=follower
+                # ).exists()
             ):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -65,10 +68,11 @@ class FoodgramUserViewSet(UserViewSet):
                 status=status.HTTP_201_CREATED
             )
 
-        subscription = Subscription.objects.filter(
-            user=following_user,
-            follower=follower
-        )
+        subscription = following_user.subscriptions.filter(follower=follower)
+        # subscription = Subscription.objects.filter(
+        #     user=following_user,
+        #     follower=follower
+        # )
 
         if subscription:
             subscription.delete()

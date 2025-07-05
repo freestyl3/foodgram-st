@@ -6,8 +6,7 @@ from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
 from recipes.models import Recipe
-
-from .models import FoodgramUser, Subscription
+from .models import FoodgramUser
 
 
 class Base64AvatarField(serializers.ImageField):
@@ -34,13 +33,14 @@ class FoodgramUserSerializer(UserSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
+        user = self.context['request'].user
         if user.is_anonymous:
             return False
-        return Subscription.objects.filter(
-            user=obj,
-            follower=user
-        ).exists()
+        return obj.subscriptions.filter(follower=user).exists()
+        # return Subscription.objects.filter(
+        #     user=obj,
+        #     follower=user
+        # ).exists()
 
     def get_avatar(self, obj):
         if obj.avatar:

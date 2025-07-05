@@ -4,9 +4,11 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 
 from users.serializers import FoodgramUserSerializer
-
-from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                     ShoppingCart)
+from .constraints import (
+    MIN_COOKING_TIME, MAX_COOKING_TIME,
+    MIN_INGREDIENT_AMOUNT, MAX_INGREDIENT_AMOUNT
+)
+from .models import Ingredient, Recipe, RecipeIngredient
 
 
 class Base64RecipeField(serializers.ImageField):
@@ -39,6 +41,10 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         source='ingredient.measurement_unit',
         read_only=True
     )
+    amount = serializers.IntegerField(
+        min_value=MIN_INGREDIENT_AMOUNT,
+        max_value=MAX_INGREDIENT_AMOUNT
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -54,6 +60,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         source='ingredient_amount',
         many=True
     )
+    cooking_time = serializers.IntegerField(
+        min_value=MIN_COOKING_TIME,
+        max_value=MAX_COOKING_TIME
+    )
 
     class Meta:
         model = Recipe
@@ -63,42 +73,31 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('id', 'author')
 
-    def create(self, validated_data):
-        print('create')
-        print(validated_data)
-        recipe_data = validated_data.pop('ingredient_amount')
-        print(recipe_data)
-        recipe = Recipe.objects.create(**validated_data)
+    def recipe_ingredient_bulk_create(self, instance, recipe_data):
         RecipeIngredient.objects.bulk_create(
             [
                 RecipeIngredient(
-                    recipe=recipe,
+                    recipe=instance,
                     ingredient=recipe_ingredient['ingredient'],
                     amount=recipe_ingredient['amount']
                 ) for recipe_ingredient in recipe_data
             ]
         )
+
+    def create(self, validated_data):
+        recipe_data = validated_data.pop('ingredient_amount')
+        recipe = Recipe.objects.create(**validated_data)
+        self.recipe_ingredient_bulk_create(recipe, recipe_data)
         return recipe
 
     def update(self, instance, validated_data):
-        print('update')
-        print(validated_data)
         recipe_data = validated_data.pop('ingredient_amount', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         if recipe_data is not None:
-            print(recipe_data)
             instance.ingredient_amount.all().delete()
-            RecipeIngredient.objects.bulk_create(
-                [
-                    RecipeIngredient(
-                        recipe=instance,
-                        ingredient=recipe_ingredient['ingredient'],
-                        amount=recipe_ingredient['amount']
-                    ) for recipe_ingredient in recipe_data
-                ]
-            )
+            self.recipe_ingredient_bulk_create(instance, recipe_data)
         return instance
 
     def validate(self, data):
@@ -124,15 +123,17 @@ class RecipeSerializer(serializers.ModelSerializer):
         return representation
 
     def get_is_favorited(self, obj):
-        user = self.context.get('request').user
-        return Favorite.objects.filter(
-            user=user.id,
-            recipe=obj
-        ).exists()
+        user = self.context['request'].user
+        return obj.favorited_recipes.filter(user=user.id).exists()
+        # return Favorite.objects.filter(
+        #     user=user.id,
+        #     recipe=obj
+        # ).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        user = self.context.get('request').user
-        return ShoppingCart.objects.filter(
-            user=user.id,
-            recipe=obj
-        ).exists()
+        user = self.context['request'].user
+        return obj.recipes_in_shopping_cart.filter(user=user.id).exists()
+        # return ShoppingCart.objects.filter(
+        #     user=user.id,
+        #     recipe=obj
+        # ).exists()
